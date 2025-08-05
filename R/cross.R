@@ -1,76 +1,64 @@
-#devtools::load_all("E:/FangCloudSync/R_WD360/Project/soyplant")
-devtools::install_github("zhaoqingsonga/soyplant")
+#加载必要的包
 library(openxlsx)
 source("R/mainfunction.R")
 library(dplyr)
 library(stringr)
-#输出二维矩阵
-mycross<-export_cross_matrix()
 
-#配置杂交组合，
-#第一步亲本筛选
-##母本筛选
-parent_table<-readRDS("data/parent_table.rds")
-mother<-parent_table|>filter(转基因=="否",
-                     str_detect(审定编号, "2023")|str_detect(审定编号, "2024"),
-                     str_detect(适宜区域, "南片")|
-                       str_detect(适宜区域, "淮北")|
-                       str_detect(适宜区域, "河南")|
-                       str_detect(审定编号, "皖审")
-                     )
+#读入原始亲本数据
+parent<-read.xlsx("data/亲本test.xlsx","杂交")
+print(parent)
 
-mother_names<-mother$名称
-mother_names<-c(mother_names,"圣豆101","圣豆3","中豆57","南农66")
-##转基因父本筛选
-G2_parent<-readRDS("data/G2_parent.rds")
-G_father<-parent_table|>filter(名称%in%G2_parent|str_detect(名称,"GLHJD"))
-G_father_names<-G_father$名称                         
+#初始化亲本表，生成parent_table.rds
+initialize_parent_table(parent)
+#查看亲本表
+readRDS("data/parent_table.rds")
+#初始化组合表，生成cross_table.rds
+combi<-combine_records()
+#查看组合表
+readRDS("data/cross_table.rds")
+#增加亲本并更新组合
+add_parent_and_append_cross(data.frame(名称=c("test1","test2")))
+#删除亲本并更新组合
+remove_last_parents(2)
+#导出excel格式编辑，注意不能增加或删除记录。
+edit_parent_table_via_excel("export")
+#导入编辑结果
+edit_parent_table_via_excel("import")
 
-#常规父本选择
-Nfather_names<-c("冀农科018","油6019","南农47","冀农科022","冀农科091",
-                 "中黄340","华豆17","徐豆31","徐豆32","GM25H056","GM25H057")
-
-
-
-
-#第二步-配置转基因杂交组合
-set.seed(2356)
-mycross<-run_cross_plan(n = 10,
-                        mother_names,
-                        G_father_names,
-                        content_value = "test"
+#配制杂交组合,可根据条件进行筛选亲本
+ mycross<-run_cross_plan(
+  n=3,
+  mother_names=c("郑1307","中黄301","中黄13"),
+  father_names=c("中黄13","齐黄34","金豆99"),
+  content_value="2025_test01"
 )
-
-#转基因可做组合：
-mother_names<-read.table("clipboard")[,1]
-G_father_names<-read.table("clipboard")[,1]
-#配置转基因杂交组合
-set.seed(2356)
-mycross<-run_cross_plan(n = 363,
-                        mother_names,
-                        G_father_names,
-                        content_value = "25可做转基因组合"
-)
-
-mycross<-run_cross_plan(n = 3,
-                        c("冀豆12","冀豆17","徐豆18"),
-                        c("中联豆5077","中联豆6024"),
-                        content_value = "25test"
-)
-
-
-
-#批次统计
+ mycross<-run_cross_plan(
+   n=1,
+   mother_names=c("郑1307","中黄301","中黄13","平豆2号"),
+   father_names=c("中黄13","齐黄34","金豆99","平豆2号"),
+   content_value="A"
+ )
+ 
+ 
+#查看杂交批次
 summarize_cross_batches()
+#选择杂交批次
+filter_cross_by_batches(c("2025_test01"))
+#删除杂交批次
+clear_cross_batches(c("test02"))
 
-#批次筛选
-mycross<-filter_cross_by_batches(c("test"))
+#按批次提取杂交组合
+mycross<-filter_cross_by_batches(c("2025_test02"))
 
-#批次删除
-#clear_cross_batches(c("25可做转基因组合"),preview = FALSE)
+#查看组合矩阵
+export_cross_matrix()
+readRDS("data/cross_matrix.rds")
+#包含反交记录
+read.xlsx("data/cross_matrix_reverse.xlsx")
 
+#查看亲本作用情况
 
-#统计做杂交情况
-stac_parents<-merge_mother_father_stats()
+merge_mother_father_stats()
+
 
 

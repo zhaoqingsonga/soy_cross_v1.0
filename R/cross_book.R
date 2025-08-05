@@ -1,4 +1,3 @@
-devtools::load_all("E:/FangCloudSync/R_WD360/Project/soyplant")
 
 library(openxlsx)
 library(dplyr)
@@ -10,6 +9,7 @@ summarize_cross_batches()
 # 批次筛选
 #mycross <- filter_cross_by_batches(c("N2561种腐病","N2561种腐病反交"))
 mycross <- filter_cross_by_batches(c("一"))
+
 
 
 

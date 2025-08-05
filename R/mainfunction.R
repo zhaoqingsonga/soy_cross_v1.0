@@ -1368,7 +1368,7 @@ edit_parent_table <- function(file = "data/parent_table.rds",
 #' @export
 edit_parent_table_via_excel <- function(mode = c("export", "import"),
                                         rds_path = "data/parent_table.rds",
-                                        xlsx_path = "parent_table_edit.xlsx",
+                                        xlsx_path = "data/parent_table_edit.xlsx",
                                         backup = TRUE) {
   mode <- match.arg(mode)
 
