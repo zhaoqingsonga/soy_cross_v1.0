@@ -1426,3 +1426,31 @@ edit_parent_table_via_excel <- function(mode = c("export", "import"),
 
 
 
+
+#' 按条件筛选亲本，返回名称向量
+#' 
+#' @param condition_str 字符串形式的筛选条件，如 "蛋白>45&脂肪<20|株高>80"
+#' @param file 亲本主表RDS路径，默认"data/parent_table.rds"
+#' @return 满足条件的亲本名称向量
+#' @export
+select_parent <- function(condition_str, file = "data/parent_table.rds") {
+  if (!requireNamespace("dplyr", quietly = TRUE)) stop("请先安装dplyr包")
+  if (!requireNamespace("rlang", quietly = TRUE)) stop("请先安装rlang包")
+  if (!file.exists(file)) stop("❌ 未找到文件：", file)
+  df <- readRDS(file)
+  # 检查名称字段
+  if (!"名称" %in% names(df)) stop("❌ 数据中缺少'名称'字段")
+  
+  # 处理字符串条件，将中文值用引号包围
+  processed_condition <- condition_str
+  
+  # 使用正则表达式匹配并替换字符串值
+  # 匹配模式：字段名 == 值，其中值不是数字
+  processed_condition <- gsub("([a-zA-Z\u4e00-\u9fa5_]+)\\s*==\\s*([^0-9\\s][^\\s]*)", 
+                              "\\1 == \"\\2\"", processed_condition)
+  
+  # 解析条件表达式
+  expr <- rlang::parse_expr(processed_condition)
+  res <- dplyr::filter(df, !!expr)
+  return(res$名称)
+}
