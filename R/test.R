@@ -64,5 +64,5 @@ read.xlsx("data/cross_matrix_reverse.xlsx")
 
 #查看亲本作用情况
 
-merge_mother_father_stats()
+mf<-merge_mother_father_stats()
 
